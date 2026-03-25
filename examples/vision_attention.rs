@@ -73,7 +73,7 @@ impl VisionAttentionBlock {
         let conv_out = self.conv.forward(input)?;
 
         // 2) Permute to (B, H', W', C) then reshape to (B, S, C)
-        let permuted = ferrotorch_core::permute_t(&conv_out, &[0, 2, 3, 1])?;
+        let permuted = ferrotorch_core::permute_t(&conv_out, &[0, 2, 3, 1])?.contiguous()?;
         let seq_len = self.spatial_h * self.spatial_w;
         let reshaped = ferrotorch_core::view_t(
             &permuted,
@@ -94,7 +94,7 @@ impl VisionAttentionBlock {
                 self.embed_dim as i64,
             ],
         )?;
-        let back_to_conv = ferrotorch_core::permute_t(&spatial, &[0, 3, 1, 2])?;
+        let back_to_conv = ferrotorch_core::permute_t(&spatial, &[0, 3, 1, 2])?.contiguous()?;
 
         // 5) Flatten to (B, C*H'*W') -> Linear
         let flat = ferrotorch_core::view_t(

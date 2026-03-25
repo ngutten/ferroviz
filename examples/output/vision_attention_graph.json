@@ -226,7 +226,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 199,
+      "observed_duration_us": 48,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -248,7 +248,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 3,
+      "observed_duration_us": 2,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -335,7 +335,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 5,
+      "observed_duration_us": 6,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -356,7 +356,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 707,
+      "observed_duration_us": 3,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -378,7 +378,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 24,
+      "observed_duration_us": 358,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -399,7 +399,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 1672,
+      "observed_duration_us": 1725,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -532,7 +532,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 9,
+      "observed_duration_us": 8,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -574,7 +574,7 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 6,
+      "observed_duration_us": 5,
       "requires_grad": true,
       "gpu_fallback": false,
       "cuda_kernels": [],
@@ -1123,7 +1123,7 @@
     }
   ],
   "runtime": {
-    "total_duration_us": 2869,
+    "total_duration_us": 2396,
     "op_events": [
       {
         "node_id": 0,
@@ -1277,7 +1277,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 199,
+        "duration_us": 48,
         "output_shape": [
           144,
           16
@@ -1292,7 +1292,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 3,
+        "duration_us": 2,
         "output_shape": [
           4,
           36,
@@ -1356,7 +1356,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 5,
+        "duration_us": 6,
         "output_shape": [
           144,
           16
@@ -1371,7 +1371,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 707,
+        "duration_us": 3,
         "output_shape": [
           16,
           144
@@ -1387,7 +1387,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 24,
+        "duration_us": 358,
         "output_shape": [
           144,
           144
@@ -1402,7 +1402,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 1672,
+        "duration_us": 1725,
         "output_shape": [
           144,
           144
@@ -1499,7 +1499,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 9,
+        "duration_us": 8,
         "output_shape": [
           4,
           10
@@ -1529,7 +1529,7 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 6,
+        "duration_us": 5,
         "output_shape": [
           4,
           10

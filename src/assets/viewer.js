@@ -147,7 +147,7 @@
         svg.attr("viewBox", "0 0 " + (graphWidth + 40) + " " + (graphHeight + 40));
 
         // Zoom/pan
-        var zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", function() {
+        var zoom = d3.zoom().scaleExtent([0.1, 16]).on("zoom", function() {
             inner.attr("transform", d3.event.transform);
         });
         svg.call(zoom);

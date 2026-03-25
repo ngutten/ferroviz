@@ -408,9 +408,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "ferray-core"
-version = "0.2.5"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbd093c7989fdac2fd8a91798019b348c588523d204596916282bff80081889e"
+checksum = "939243941f23aa644f85c0ac74649796d7698c1e213bff96abe853baf6c7da4c"
 dependencies = [
  "ferray-core-macros",
  "half",
@@ -422,9 +422,9 @@ dependencies = [
 
 [[package]]
 name = "ferray-core-macros"
-version = "0.2.5"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3f18765f864efaf1b3fe79a3becb46167f1393c967ad02e4532a2ff2d9d52b6"
+checksum = "69d62b0ec84c387b78fa1b75dccc1103066c795e54cb7bf2f8d598161f15c82d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -433,9 +433,9 @@ dependencies = [
 
 [[package]]
 name = "ferray-linalg"
-version = "0.2.5"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7ea3e470f7a5ff31175ac76db7ee09ed3ac5ec71a59442a68cc9302dd2d57d7"
+checksum = "ae25f71b95ec4ccbff2ab991a85d449dcc2ac81a7c3ee818680dd0869b7d0f27"
 dependencies = [
  "faer",
  "faer-traits",
@@ -448,20 +448,21 @@ dependencies = [
 
 [[package]]
 name = "ferray-random"
-version = "0.2.5"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8024dc8ecddd4cbfb5d12d6783295028ec52eef5c5a57325453ea08a85aacc7"
+checksum = "fb11f7fc9e036f2e0a779da2a7cc87a32b82ab87390bcd99fe00b4b051d62f87"
 dependencies = [
  "ferray-core",
+ "getrandom 0.2.17",
  "rand_core 0.6.4",
  "rayon",
 ]
 
 [[package]]
 name = "ferray-ufunc"
-version = "0.2.5"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07217428239b6beccc65dd606afa186dd52e9892e0e2964ff9d5406d48ae86d7"
+checksum = "743d567de028ede41f84f6ddad2870c64fde308fc0ee5bb0d7cac1329f6baba7"
 dependencies = [
  "core-math",
  "ferray-core",
@@ -473,9 +474,9 @@ dependencies = [
 
 [[package]]
 name = "ferrotorch-core"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4e9cd711cb23793b0a7e5ca6901264d5385f24aba1eabd4392210de5db550ee"
+checksum = "e8c5a2781cfc0e299a0a54362cb5081cfff62c3e1d666e8dabd7dadf2f5ff2e8"
 dependencies = [
  "faer",
  "ferray-core",
@@ -492,9 +493,9 @@ dependencies = [
 
 [[package]]
 name = "ferrotorch-jit"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d434daaca15e3b153f14eea3a5761653ba90066022b00351e663553bb8a700d2"
+checksum = "2745ccbd3f596154365aedcc44c3dc9d11ed5219aaf6a468fe6cc0914580cbe8"
 dependencies = [
  "ferrotorch-core",
  "ferrotorch-nn",
@@ -504,9 +505,9 @@ dependencies = [
 
 [[package]]
 name = "ferrotorch-nn"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4301a982bc72f17bd249391e13d291fc44fa993db873ce9b8dfef7df1372dca9"
+checksum = "37559f6a873489b7db386b70eaab88f396d994124b7f653acd7e5a6846e50ae8"
 dependencies = [
  "ferrotorch-core",
  "ferrotorch-nn-derive",
@@ -516,9 +517,9 @@ dependencies = [
 
 [[package]]
 name = "ferrotorch-nn-derive"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73c7b88f3da5317cb728b2718470bde0c0b4900a0069f276695b4469a3944c79"
+checksum = "5331fcf30e83b864b50928b0b5d451cfc9274e9f662faada58bb5d507eff35a2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -527,9 +528,9 @@ dependencies = [
 
 [[package]]
 name = "ferrotorch-optim"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6762e35cb947ab490d4ecb689d744ce8b04656337b54e47a2b3f475539f10e1"
+checksum = "5a6708a2ce6892a80a1309415c1e641ebaa9b3a94520d2238e2c1e2027a8641b"
 dependencies = [
  "ferrotorch-core",
  "ferrotorch-nn",
@@ -707,6 +708,17 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
+version = "0.2.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff2abc00be7fca6ebc474524697ae276ad847ad0a6b3faa4bcb027e9a4614ad0"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "wasi",
+]
+
+[[package]]
+name = "getrandom"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd"
@@ -798,7 +810,7 @@ version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9afb3de4395d6b3e67a780b6de64b51c978ecf11cb9a462c66be7d4ca9039d33"
 dependencies = [
- "getrandom",
+ "getrandom 0.3.4",
  "libc",
 ]
 
@@ -1295,7 +1307,7 @@ version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
 dependencies = [
- "getrandom",
+ "getrandom 0.3.4",
 ]
 
 [[package]]
@@ -1722,6 +1734,12 @@ dependencies = [
  "same-file",
  "winapi-util",
 ]
+
+[[package]]
+name = "wasi"
+version = "0.11.1+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b"
 
 [[package]]
 name = "wasip2"
