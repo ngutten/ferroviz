@@ -1,0 +1,168 @@
+/* Ferroviz graph viewer styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    background: #16213e;
+    padding: 10px 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e94560;
+}
+
+header .stats {
+    font-size: 13px;
+    color: #999;
+}
+
+.main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+#graph-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+#graph-svg {
+    width: 100%;
+    height: 100%;
+}
+
+#graph-svg .node rect {
+    rx: 5;
+    ry: 5;
+}
+
+#graph-svg .node text {
+    font-size: 11px;
+    white-space: pre;
+}
+
+#graph-svg .edgePath path {
+    fill: none;
+}
+
+#graph-svg .edgeLabel text {
+    font-size: 10px;
+}
+
+#graph-svg .cluster rect {
+    rx: 8;
+    ry: 8;
+    stroke-width: 2px;
+    stroke-dasharray: 5,3;
+}
+
+#detail-panel {
+    display: none;
+    width: 320px;
+    background: #16213e;
+    border-left: 1px solid #333;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+#detail-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #e94560;
+}
+
+#detail-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+#detail-panel td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #2a2a4a;
+}
+
+#detail-panel td:first-child {
+    color: #888;
+    white-space: nowrap;
+    width: 1%;
+}
+
+#timeline-container {
+    background: #16213e;
+    border-top: 1px solid #333;
+    padding: 12px 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#timeline-container h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #e94560;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.timeline-bar {
+    height: 22px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    min-width: 2px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.timeline-bar:hover {
+    opacity: 0.8;
+}
+
+.timeline-label {
+    font-size: 11px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+}
