@@ -1,15 +1,23 @@
 //! Instrumented interpreter that mirrors ferrotorch-jit's interpreter
 //! but records per-op timing, device information, and tensor shapes.
+//!
+//! When an op fails on GPU (e.g. missing kernel), the interpreter transparently
+//! falls back to CPU, flags the op with `gpu_fallback: true`, and records the
+//! device it *attempted* to run on.
 
 use std::collections::HashMap;
 use std::time::Instant;
 
-use ferrotorch_core::{Float, FerrotorchResult, Tensor};
+use ferrotorch_core::{Device, Float, FerrotorchResult, Tensor};
 use ferrotorch_jit::graph::{IrGraph, IrNodeId, IrOpKind, IrValueId};
 
 use crate::model::{OpEvent, RuntimeProfile, SerializableDevice};
 
 /// Run the graph through an instrumented interpreter, recording profiling events.
+///
+/// If an op fails on GPU, inputs are copied to CPU, the op is re-executed there,
+/// and the result is copied back to the original device. The fallback is recorded
+/// in the `OpEvent`.
 pub fn instrumented_interpret<T: Float>(
     graph: &IrGraph,
     inputs: &[Tensor<T>],
@@ -44,8 +52,25 @@ pub fn instrumented_interpret<T: Float>(
             .filter_map(|id| values.get(id).map(|t| SerializableDevice::from(t.device())))
             .collect();
 
+        // Determine if any input is on GPU (for fallback tracking)
+        let any_gpu_input = input_devices.iter().any(|d| matches!(d, SerializableDevice::Cuda(_)));
+
         let start = Instant::now();
-        let result = dispatch_op(node_id, &node.op, &node.inputs, &mut values, inputs)?;
+        let mut gpu_fallback = false;
+
+        let result = match dispatch_op(node_id, &node.op, &node.inputs, &mut values, inputs) {
+            Ok(r) => r,
+            Err(e) if any_gpu_input => {
+                // GPU op failed — try CPU fallback
+                eprintln!(
+                    "ferroviz: GPU op {:?} failed ({}), falling back to CPU",
+                    op_label_str, e
+                );
+                gpu_fallback = true;
+                dispatch_op_cpu_fallback(node_id, &node.op, &node.inputs, &mut values, inputs)?
+            }
+            Err(e) => return Err(e),
+        };
         let elapsed = start.elapsed();
 
         // Store outputs
@@ -78,6 +103,7 @@ pub fn instrumented_interpret<T: Float>(
             duration_us: elapsed.as_micros() as u64,
             output_shape,
             requires_grad,
+            gpu_fallback,
         });
     }
 
@@ -93,6 +119,56 @@ pub fn instrumented_interpret<T: Float>(
     };
 
     Ok((output, profile))
+}
+
+/// Execute an op with CPU fallback: move GPU inputs to CPU, execute, move result back.
+fn dispatch_op_cpu_fallback<T: Float>(
+    node_id: IrNodeId,
+    op: &IrOpKind,
+    inputs: &[IrValueId],
+    values: &mut HashMap<IrValueId, Tensor<T>>,
+    graph_inputs: &[Tensor<T>],
+) -> FerrotorchResult<Option<Tensor<T>>> {
+    // Determine the target GPU device from input tensors
+    let target_device = inputs.iter()
+        .filter_map(|id| values.get(id))
+        .find_map(|t| match t.device() {
+            Device::Cuda(n) => Some(Device::Cuda(n)),
+            _ => None,
+        });
+
+    // Create a temporary values map with CPU copies
+    let mut cpu_values: HashMap<IrValueId, Tensor<T>> = HashMap::new();
+    for (&id, tensor) in values.iter() {
+        if tensor.device() != Device::Cpu {
+            cpu_values.insert(id, tensor.to(Device::Cpu)?);
+        } else {
+            cpu_values.insert(id, tensor.clone());
+        }
+    }
+
+    // Also create CPU copies of graph inputs
+    let cpu_graph_inputs: Vec<Tensor<T>> = graph_inputs
+        .iter()
+        .map(|t| {
+            if t.device() != Device::Cpu {
+                t.to(Device::Cpu)
+            } else {
+                Ok(t.clone())
+            }
+        })
+        .collect::<FerrotorchResult<Vec<_>>>()?;
+
+    let result = dispatch_op(node_id, op, inputs, &mut cpu_values, &cpu_graph_inputs)?;
+
+    // Move result back to GPU if we have a target device
+    match (result, target_device) {
+        (Some(tensor), Some(dev)) => {
+            let gpu_tensor = tensor.to(dev)?;
+            Ok(Some(gpu_tensor))
+        }
+        (result, _) => Ok(result),
+    }
 }
 
 /// Dispatch a single op, returning the result tensor (None for Output nodes).

@@ -12,6 +12,13 @@ pub struct VisGraph {
     pub cuda_trace: Option<CudaTrace>,
 }
 
+/// Combined forward + backward visualization for a training step.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrainingStepVis {
+    pub forward: VisGraph,
+    pub backward: VisGraph,
+}
+
 /// A node in the visualization graph, corresponding to one IR operation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VisNode {
@@ -28,6 +35,9 @@ pub struct VisNode {
     pub observed_output_device: Option<SerializableDevice>,
     pub observed_duration_us: Option<u64>,
     pub requires_grad: Option<bool>,
+    /// True if this op attempted GPU execution but fell back to CPU
+    /// due to a missing GPU kernel.
+    pub gpu_fallback: Option<bool>,
     // CUDA trace fields (empty if no nsys data)
     pub cuda_kernels: Vec<CudaKernelLaunch>,
     pub cuda_memcpy: Vec<CudaMemcpy>,
@@ -69,6 +79,8 @@ pub struct OpEvent {
     pub duration_us: u64,
     pub output_shape: Vec<usize>,
     pub requires_grad: bool,
+    /// True if this op attempted GPU but fell back to CPU.
+    pub gpu_fallback: bool,
 }
 
 /// CUDA trace data from nsys.
@@ -107,6 +119,7 @@ pub enum OpCategory {
     Shape,
     Control,
     Fused,
+    Backward,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

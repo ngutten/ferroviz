@@ -17,6 +17,7 @@ header {
     display: flex;
     align-items: center;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
 header h1 {
@@ -28,6 +29,37 @@ header h1 {
 header .stats {
     font-size: 13px;
     color: #999;
+}
+
+.tab-bar {
+    background: #16213e;
+    padding: 4px 20px;
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.tab {
+    background: transparent;
+    border: 1px solid #444;
+    color: #999;
+    padding: 6px 16px;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.tab:hover {
+    color: #e0e0e0;
+    border-color: #666;
+}
+
+.tab.active {
+    background: #1a1a2e;
+    color: #e94560;
+    border-color: #e94560;
+    border-bottom-color: #1a1a2e;
 }
 
 .main {
@@ -152,6 +184,7 @@ header .stats {
     display: flex;
     gap: 12px;
     font-size: 12px;
+    flex-wrap: wrap;
 }
 
 .legend-item {
@@ -165,4 +198,12 @@ header .stats {
     height: 12px;
     border-radius: 2px;
     display: inline-block;
+}
+
+.swatch-gpu {
+    /* Solid fill indicates GPU */
+}
+
+.swatch-fallback {
+    border: 2px dashed #e65100 !important;
 }

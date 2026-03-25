@@ -15,6 +15,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -33,6 +34,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -50,6 +52,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -68,6 +71,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -86,6 +90,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -104,6 +109,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -122,6 +128,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -140,6 +147,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -157,6 +165,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -175,6 +184,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 0,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -196,6 +206,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 22,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -215,8 +226,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 192,
+      "observed_duration_us": 199,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -236,8 +248,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 2,
+      "observed_duration_us": 3,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -258,6 +271,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 1,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -279,6 +293,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 7,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -298,8 +313,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 11,
+      "observed_duration_us": 6,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -321,6 +337,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 5,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -339,8 +356,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 722,
+      "observed_duration_us": 707,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -360,8 +378,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 32,
+      "observed_duration_us": 24,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -380,8 +399,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 1709,
+      "observed_duration_us": 1672,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -401,8 +421,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 13,
+      "observed_duration_us": 14,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -422,8 +443,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 5,
+      "observed_duration_us": 6,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -443,8 +465,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 1,
+      "observed_duration_us": 2,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -467,6 +490,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 1,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -487,6 +511,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 1,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -507,8 +532,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 10,
+      "observed_duration_us": 9,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -529,6 +555,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 7,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -547,8 +574,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 5,
+      "observed_duration_us": 6,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -568,8 +596,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 4,
+      "observed_duration_us": 5,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -589,8 +618,9 @@
         "Cpu"
       ],
       "observed_output_device": "Cpu",
-      "observed_duration_us": 6,
+      "observed_duration_us": 7,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     },
@@ -610,6 +640,7 @@
       "observed_output_device": "Cpu",
       "observed_duration_us": 2,
       "requires_grad": true,
+      "gpu_fallback": false,
       "cuda_kernels": [],
       "cuda_memcpy": []
     }
@@ -1092,7 +1123,7 @@
     }
   ],
   "runtime": {
-    "total_duration_us": 2915,
+    "total_duration_us": 2869,
     "op_events": [
       {
         "node_id": 0,
@@ -1104,7 +1135,8 @@
           144,
           27
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 1,
@@ -1116,7 +1148,8 @@
           27,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 2,
@@ -1127,7 +1160,8 @@
         "output_shape": [
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 3,
@@ -1139,7 +1173,8 @@
           16,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 4,
@@ -1151,7 +1186,8 @@
           16,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 5,
@@ -1163,7 +1199,8 @@
           16,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 6,
@@ -1175,7 +1212,8 @@
           16,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 7,
@@ -1187,7 +1225,8 @@
           10,
           576
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 8,
@@ -1198,7 +1237,8 @@
         "output_shape": [
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 9,
@@ -1210,7 +1250,8 @@
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 10,
@@ -1225,7 +1266,8 @@
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 11,
@@ -1235,12 +1277,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 192,
+        "duration_us": 199,
         "output_shape": [
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 12,
@@ -1249,13 +1292,14 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 2,
+        "duration_us": 3,
         "output_shape": [
           4,
           36,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 13,
@@ -1269,7 +1313,8 @@
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 14,
@@ -1284,7 +1329,8 @@
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 15,
@@ -1294,12 +1340,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 11,
+        "duration_us": 6,
         "output_shape": [
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 16,
@@ -1314,7 +1361,8 @@
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 17,
@@ -1323,12 +1371,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 722,
+        "duration_us": 707,
         "output_shape": [
           16,
           144
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 18,
@@ -1338,12 +1387,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 32,
+        "duration_us": 24,
         "output_shape": [
           144,
           144
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 19,
@@ -1352,12 +1402,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 1709,
+        "duration_us": 1672,
         "output_shape": [
           144,
           144
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 20,
@@ -1367,12 +1418,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 13,
+        "duration_us": 14,
         "output_shape": [
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 21,
@@ -1382,12 +1434,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 5,
+        "duration_us": 6,
         "output_shape": [
           144,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 22,
@@ -1396,13 +1449,14 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 1,
+        "duration_us": 2,
         "output_shape": [
           4,
           36,
           16
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 23,
@@ -1418,7 +1472,8 @@
           6,
           6
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 24,
@@ -1432,7 +1487,8 @@
           4,
           576
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 25,
@@ -1443,12 +1499,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 10,
+        "duration_us": 9,
         "output_shape": [
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 26,
@@ -1462,7 +1519,8 @@
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 27,
@@ -1471,12 +1529,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 5,
+        "duration_us": 6,
         "output_shape": [
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 28,
@@ -1486,12 +1545,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 4,
+        "duration_us": 5,
         "output_shape": [
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 29,
@@ -1501,12 +1561,13 @@
           "Cpu"
         ],
         "output_device": "Cpu",
-        "duration_us": 6,
+        "duration_us": 7,
         "output_shape": [
           4,
           10
         ],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       },
       {
         "node_id": 30,
@@ -1517,7 +1578,8 @@
         "output_device": "Cpu",
         "duration_us": 2,
         "output_shape": [],
-        "requires_grad": true
+        "requires_grad": true,
+        "gpu_fallback": false
       }
     ]
   }

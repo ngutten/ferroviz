@@ -1,5 +1,6 @@
-//! The `capture()` and `analyze()` APIs that orchestrate tracing, optimization,
-//! instrumented interpretation, and fusion analysis into a VisGraph.
+//! The `capture()`, `analyze()`, and `capture_training_step()` APIs that
+//! orchestrate tracing, optimization, instrumented interpretation, backward
+//! graph walking, and fusion analysis into visualization data.
 
 use std::collections::HashMap;
 
@@ -7,6 +8,7 @@ use ferrotorch_core::{Float, FerrotorchResult, Tensor};
 use ferrotorch_jit::graph::IrGraph;
 use ferrotorch_jit::OptimizationConfig;
 
+use crate::backward::capture_backward_graph;
 use crate::fusion_analysis::{analyze_fusion_groups, build_cluster_map};
 use crate::instrument::instrumented_interpret;
 use crate::model::*;
@@ -52,6 +54,35 @@ where
     let vis = build_vis_graph(&opt_graph, &fusion_clusters, &cluster_map, Some(&profile), &event_map);
 
     Ok(vis)
+}
+
+/// Capture a full training step: forward pass (traced + instrumented) and
+/// backward pass (structural graph from the autograd `grad_fn` chain).
+///
+/// The closure `f` should compute a scalar loss from the inputs.
+/// After the forward pass is captured, `loss.backward()` is called and the
+/// backward graph is walked from the loss tensor's `grad_fn`.
+pub fn capture_training_step<T, F>(
+    f: F,
+    example_inputs: &[Tensor<T>],
+) -> FerrotorchResult<TrainingStepVis>
+where
+    T: Float,
+    F: Fn(&[Tensor<T>]) -> FerrotorchResult<Tensor<T>>,
+{
+    // 1. Run the forward function eagerly to get the loss tensor
+    let loss = f(example_inputs)?;
+
+    // 2. Run backward to populate the autograd graph
+    loss.backward()?;
+
+    // 3. Capture the backward graph by walking grad_fn
+    let backward = capture_backward_graph(&loss);
+
+    // 4. Capture the forward graph via tracing + instrumented interpretation
+    let forward = capture(f, example_inputs)?;
+
+    Ok(TrainingStepVis { forward, backward })
 }
 
 /// Static analysis only — no runtime execution. Builds a VisGraph from an IrGraph
@@ -104,6 +135,7 @@ fn build_vis_graph(
                 observed_output_device: event.map(|e| e.output_device),
                 observed_duration_us: event.map(|e| e.duration_us),
                 requires_grad: event.map(|e| e.requires_grad),
+                gpu_fallback: event.map(|e| e.gpu_fallback),
                 cuda_kernels: vec![],
                 cuda_memcpy: vec![],
             }

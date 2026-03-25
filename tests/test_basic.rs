@@ -63,6 +63,8 @@ fn test_analyze_simple_add() {
     let add_node = add_node.unwrap();
     assert_eq!(add_node.category, ferroviz::model::OpCategory::Elementwise);
     assert_eq!(add_node.output_shapes, vec![vec![2, 3]]);
+    // No runtime data, so gpu_fallback should be None
+    assert_eq!(add_node.gpu_fallback, None);
 }
 
 #[test]
@@ -82,7 +84,6 @@ fn test_analyze_mlp_fusion_groups() {
     let vis = ferroviz::analyze(&graph);
 
     // Should detect fusion groups
-    // At minimum, Relu and Tanh could be in elementwise groups
     assert!(vis.nodes.len() >= 4, "MLP should have at least 4 non-IO nodes");
 
     // Check edges connect properly
@@ -124,6 +125,11 @@ fn test_instrumented_interpret_add() {
     // Verify profiling events
     assert!(!profile.op_events.is_empty(), "should have profiling events");
     assert!(profile.total_duration_us > 0 || profile.op_events.len() > 0);
+
+    // All CPU ops should have gpu_fallback = false
+    for event in &profile.op_events {
+        assert!(!event.gpu_fallback, "CPU ops should not have gpu_fallback");
+    }
 }
 
 #[test]
@@ -191,6 +197,46 @@ fn test_html_output() {
 }
 
 #[test]
+fn test_html_training_step() {
+    let graph = mlp_graph();
+    let vis = ferroviz::analyze(&graph);
+
+    // Create a minimal backward graph
+    let backward = ferroviz::model::VisGraph {
+        nodes: vec![ferroviz::model::VisNode {
+            id: 0,
+            op_label: "MmBackward".to_string(),
+            category: ferroviz::model::OpCategory::Backward,
+            cluster_id: None,
+            output_shapes: vec![],
+            observed_input_devices: None,
+            observed_output_device: None,
+            observed_duration_us: None,
+            requires_grad: Some(true),
+            gpu_fallback: None,
+            cuda_kernels: vec![],
+            cuda_memcpy: vec![],
+        }],
+        edges: vec![],
+        fusion_groups: vec![],
+        runtime: None,
+        #[cfg(feature = "cuda-trace")]
+        cuda_trace: None,
+    };
+
+    let training = ferroviz::model::TrainingStepVis {
+        forward: vis,
+        backward,
+    };
+
+    let html = ferroviz::render_html_training_step(&training);
+    assert!(html.contains("__FERROVIZ_DATA__"), "should embed forward data");
+    assert!(html.contains("__FERROVIZ_BACKWARD__"), "should embed backward data");
+    assert!(html.contains("tab-bar"), "should have tab bar");
+    assert!(html.contains("Backward"), "should have backward tab");
+}
+
+#[test]
 fn test_capture_with_traced_function() {
     // Use capture() with a simple function that ferrotorch can trace
     let x = Tensor::from_storage(
@@ -227,8 +273,6 @@ fn test_capture_with_traced_function() {
             assert!(html.contains("Ferroviz"));
         }
         Err(e) => {
-            // Tracing might fail if the ops don't produce grad_fn
-            // This is expected if inputs don't participate in autograd correctly
             eprintln!("capture() failed (may be expected): {}", e);
         }
     }
@@ -306,4 +350,62 @@ fn test_device_transition_detection() {
         detect_transition(&SerializableDevice::Cuda(0), &SerializableDevice::Cuda(0)),
         None
     );
+}
+
+#[test]
+fn test_backward_category() {
+    use ferroviz::model::OpCategory;
+    // Backward is a valid category
+    let cat = OpCategory::Backward;
+    assert_eq!(cat, OpCategory::Backward);
+}
+
+#[test]
+fn test_gpu_fallback_field_serialization() {
+    use ferroviz::model::*;
+
+    let node = VisNode {
+        id: 0,
+        op_label: "Sqrt".to_string(),
+        category: OpCategory::Elementwise,
+        cluster_id: None,
+        output_shapes: vec![vec![4]],
+        observed_input_devices: Some(vec![SerializableDevice::Cuda(0)]),
+        observed_output_device: Some(SerializableDevice::Cuda(0)),
+        observed_duration_us: Some(100),
+        requires_grad: Some(false),
+        gpu_fallback: Some(true),
+        cuda_kernels: vec![],
+        cuda_memcpy: vec![],
+    };
+
+    let json = serde_json::to_string(&node).unwrap();
+    assert!(json.contains("\"gpu_fallback\":true"), "gpu_fallback should serialize");
+
+    let parsed: VisNode = serde_json::from_str(&json).unwrap();
+    assert_eq!(parsed.gpu_fallback, Some(true));
+}
+
+#[test]
+fn test_training_step_vis_serialization() {
+    use ferroviz::model::*;
+
+    let empty_graph = VisGraph {
+        nodes: vec![],
+        edges: vec![],
+        fusion_groups: vec![],
+        runtime: None,
+        #[cfg(feature = "cuda-trace")]
+        cuda_trace: None,
+    };
+
+    let training = TrainingStepVis {
+        forward: empty_graph.clone(),
+        backward: empty_graph,
+    };
+
+    let json = serde_json::to_string(&training).unwrap();
+    let parsed: TrainingStepVis = serde_json::from_str(&json).unwrap();
+    assert_eq!(parsed.forward.nodes.len(), 0);
+    assert_eq!(parsed.backward.nodes.len(), 0);
 }
