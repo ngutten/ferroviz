@@ -359,6 +359,39 @@ fn dispatch_op<T: Float>(
             Ok(Some(current))
         }
 
+        // Fused linear + activation: linear then apply activation
+        IrOpKind::FusedLinearActivation { activation } => {
+            let input = get_value(values, inputs[0])?;
+            let weight = get_value(values, inputs[1])?;
+            let bias = if inputs.len() >= 3 {
+                Some(get_value(values, inputs[2])?)
+            } else {
+                None
+            };
+            let linear_out = linalg::linear_fused(&input, &weight, bias)?;
+            let result = apply_elementwise_op(&linear_out, activation)?;
+            Ok(Some(result))
+        }
+
+        // Fused scaled dot-product attention: softmax(Q @ K^T / sqrt(d_k)) @ V
+        IrOpKind::FusedAttention { head_dim } => {
+            let q = get_value(values, inputs[0])?;
+            let k = get_value(values, inputs[1])?;
+            let v = get_value(values, inputs[2])?;
+            let k_t = shape::transpose_2d(&k)?;
+            let scores = linalg::mm_differentiable(&q, &k_t)?;
+            let scale_val = T::from(1.0 / (*head_dim as f64).sqrt()).unwrap();
+            let scale_tensor = ferrotorch_core::Tensor::from_storage(
+                ferrotorch_core::TensorStorage::cpu(vec![scale_val]),
+                vec![1],
+                false,
+            )?;
+            let scaled = arithmetic::mul(&scores, &scale_tensor)?;
+            let attn_weights = activation::softmax(&scaled)?;
+            let result = linalg::mm_differentiable(&attn_weights, &v)?;
+            Ok(Some(result))
+        }
+
         IrOpKind::Cond | IrOpKind::Scan => {
             Err(ferrotorch_core::FerrotorchError::InvalidArgument {
                 message: format!("{:?} must be lowered before interpretation", op),

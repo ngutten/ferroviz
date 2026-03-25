@@ -187,7 +187,9 @@ pub fn classify_op(op: &ferrotorch_jit::graph::IrOpKind) -> OpCategory {
         IrOpKind::Reshape { .. } | IrOpKind::Flatten | IrOpKind::Squeeze { .. }
         | IrOpKind::Unsqueeze { .. } | IrOpKind::Cat { .. } => OpCategory::Shape,
         IrOpKind::Cond | IrOpKind::Scan => OpCategory::Control,
-        IrOpKind::FusedElementwise { .. } => OpCategory::Fused,
+        IrOpKind::FusedElementwise { .. }
+        | IrOpKind::FusedLinearActivation { .. }
+        | IrOpKind::FusedAttention { .. } => OpCategory::Fused,
     }
 }
 
@@ -234,6 +236,12 @@ pub fn op_label(op: &ferrotorch_jit::graph::IrOpKind) -> String {
         IrOpKind::FusedElementwise { ops } => {
             let names: Vec<String> = ops.iter().map(|o| op_label(o)).collect();
             format!("FusedElementwise[{}]", names.join(","))
+        }
+        IrOpKind::FusedLinearActivation { activation } => {
+            format!("FusedLinear+{}", op_label(activation))
+        }
+        IrOpKind::FusedAttention { head_dim } => {
+            format!("FusedAttention(d_k={})", head_dim)
         }
     }
 }
