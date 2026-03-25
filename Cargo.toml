@@ -3,6 +3,7 @@ name = "ferroviz"
 version = "0.1.0"
 edition = "2021"
 description = "Compute graph visualizer for ferrotorch"
+license = "CC0-1.0"
 
 [dependencies]
 ferrotorch-jit = "0.1.8"

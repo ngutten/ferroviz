@@ -1,9 +1,6 @@
 # Build artifacts
 /target/
 
-# Generated example outputs (in repo root)
-/vision_attention_graph.*
-
 # Editor/IDE
 .vscode/
 .idea/

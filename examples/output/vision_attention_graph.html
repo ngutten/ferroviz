@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferroviz - Compute Graph</title>
+<style>
+/* Ferroviz graph viewer styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    background: #16213e;
+    padding: 10px 20px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e94560;
+}
+
+header .stats {
+    font-size: 13px;
+    color: #999;
+}
+
+.main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+#graph-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+#graph-svg {
+    width: 100%;
+    height: 100%;
+}
+
+#graph-svg .node rect {
+    rx: 5;
+    ry: 5;
+}
+
+#graph-svg .node text {
+    font-size: 11px;
+    white-space: pre;
+}
+
+#graph-svg .edgePath path {
+    fill: none;
+}
+
+#graph-svg .edgeLabel text {
+    font-size: 10px;
+}
+
+#graph-svg .cluster rect {
+    rx: 8;
+    ry: 8;
+    stroke-width: 2px;
+    stroke-dasharray: 5,3;
+}
+
+#detail-panel {
+    display: none;
+    width: 320px;
+    background: #16213e;
+    border-left: 1px solid #333;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+#detail-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #e94560;
+}
+
+#detail-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+#detail-panel td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #2a2a4a;
+}
+
+#detail-panel td:first-child {
+    color: #888;
+    white-space: nowrap;
+    width: 1%;
+}
+
+#timeline-container {
+    background: #16213e;
+    border-top: 1px solid #333;
+    padding: 12px 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#timeline-container h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #e94560;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.timeline-bar {
+    height: 22px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    min-width: 2px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.timeline-bar:hover {
+    opacity: 0.8;
+}
+
+.timeline-label {
+    font-size: 11px;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Legend */
+.legend {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Ferroviz</h1>
+  <span class="stats">31 nodes, 33 edges, 20 fusion groups, runtime profiled</span>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:#42a5f5;"></span>Elementwise</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#ab47bc;"></span>Reduction</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#26a69a;"></span>MatMul</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#66bb6a;"></span>Linear</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#ffa726;"></span>Activation</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#7e57c2;"></span>Fused</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#e53935;"></span>CPU round-trip</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#ff9800;"></span>Device transition</span>
+  </div>
+</header>
+<div class="main">
+  <div id="graph-container">
+    <svg id="graph-svg"></svg>
+  </div>
+  <div id="detail-panel"></div>
+</div>
+<div id="timeline-container"></div>
+
+<!-- d3 v5 (required by dagre-d3 0.6.x) and dagre-d3 from CDN -->
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dagre-d3@0.6.4/dist/dagre-d3.min.js"></script>
+
+<script>
+window.__FERROVIZ_DATA__ = {"nodes":[{"id":0,"op_label":"Input[0]","category":"IO","cluster_id":null,"output_shapes":[[144,27]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":1,"op_label":"Input[1]","category":"IO","cluster_id":null,"output_shapes":[[27,16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":2,"op_label":"Input[2]","category":"IO","cluster_id":null,"output_shapes":[[16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":3,"op_label":"Input[3]","category":"IO","cluster_id":null,"output_shapes":[[16,16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":4,"op_label":"Input[4]","category":"IO","cluster_id":null,"output_shapes":[[16,16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":5,"op_label":"Input[5]","category":"IO","cluster_id":null,"output_shapes":[[16,16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":6,"op_label":"Input[6]","category":"IO","cluster_id":null,"output_shapes":[[16,16]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":7,"op_label":"Input[7]","category":"IO","cluster_id":null,"output_shapes":[[10,576]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":8,"op_label":"Input[8]","category":"IO","cluster_id":null,"output_shapes":[[10]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":9,"op_label":"Input[9]","category":"IO","cluster_id":null,"output_shapes":[[4,10]],"observed_input_devices":[],"observed_output_device":"Cpu","observed_duration_us":0,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":10,"op_label":"Mm","category":"MatMul","cluster_id":0,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":22,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":11,"op_label":"Add","category":"Elementwise","cluster_id":1,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":192,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":12,"op_label":"Reshape[4, 36, 16]","category":"Shape","cluster_id":2,"output_shapes":[[4,36,16]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":2,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":13,"op_label":"Reshape[144, 16]","category":"Shape","cluster_id":3,"output_shapes":[[144,16]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":1,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":14,"op_label":"Mm","category":"MatMul","cluster_id":4,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":7,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":15,"op_label":"Mm","category":"MatMul","cluster_id":5,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":11,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":16,"op_label":"Mm","category":"MatMul","cluster_id":6,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":5,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":17,"op_label":"Transpose","category":"MatMul","cluster_id":7,"output_shapes":[[16,144]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":722,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":18,"op_label":"Mm","category":"MatMul","cluster_id":8,"output_shapes":[[144,144]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":32,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":19,"op_label":"Softmax","category":"Activation","cluster_id":9,"output_shapes":[[144,144]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":1709,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":20,"op_label":"Mm","category":"MatMul","cluster_id":10,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":13,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":21,"op_label":"Mm","category":"MatMul","cluster_id":11,"output_shapes":[[144,16]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":5,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":22,"op_label":"Reshape[4, 36, 16]","category":"Shape","cluster_id":12,"output_shapes":[[4,36,16]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":1,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":23,"op_label":"Reshape[4, 16, 6, 6]","category":"Shape","cluster_id":13,"output_shapes":[[4,16,6,6]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":1,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":24,"op_label":"Reshape[4, 576]","category":"Shape","cluster_id":14,"output_shapes":[[4,576]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":1,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":25,"op_label":"Linear","category":"Linear","cluster_id":15,"output_shapes":[[4,10]],"observed_input_devices":["Cpu","Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":10,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":26,"op_label":"Gelu","category":"Activation","cluster_id":16,"output_shapes":[[4,10]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":7,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":27,"op_label":"Softmax","category":"Activation","cluster_id":17,"output_shapes":[[4,10]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":5,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":28,"op_label":"Sub","category":"Elementwise","cluster_id":18,"output_shapes":[[4,10]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":4,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":29,"op_label":"Mul","category":"Elementwise","cluster_id":18,"output_shapes":[[4,10]],"observed_input_devices":["Cpu","Cpu"],"observed_output_device":"Cpu","observed_duration_us":6,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]},{"id":30,"op_label":"Mean","category":"Reduction","cluster_id":19,"output_shapes":[[1]],"observed_input_devices":["Cpu"],"observed_output_device":"Cpu","observed_duration_us":2,"requires_grad":true,"cuda_kernels":[],"cuda_memcpy":[]}],"edges":[{"from_node":0,"to_node":10,"shape":[144,27],"size_bytes":15552,"observed_device_transition":null},{"from_node":1,"to_node":10,"shape":[27,16],"size_bytes":1728,"observed_device_transition":null},{"from_node":10,"to_node":11,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":2,"to_node":11,"shape":[16],"size_bytes":64,"observed_device_transition":null},{"from_node":11,"to_node":12,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":12,"to_node":13,"shape":[4,36,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":13,"to_node":14,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":3,"to_node":14,"shape":[16,16],"size_bytes":1024,"observed_device_transition":null},{"from_node":13,"to_node":15,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":4,"to_node":15,"shape":[16,16],"size_bytes":1024,"observed_device_transition":null},{"from_node":13,"to_node":16,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":5,"to_node":16,"shape":[16,16],"size_bytes":1024,"observed_device_transition":null},{"from_node":15,"to_node":17,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":14,"to_node":18,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":17,"to_node":18,"shape":[16,144],"size_bytes":9216,"observed_device_transition":null},{"from_node":18,"to_node":19,"shape":[144,144],"size_bytes":82944,"observed_device_transition":null},{"from_node":19,"to_node":20,"shape":[144,144],"size_bytes":82944,"observed_device_transition":null},{"from_node":16,"to_node":20,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":20,"to_node":21,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":6,"to_node":21,"shape":[16,16],"size_bytes":1024,"observed_device_transition":null},{"from_node":21,"to_node":22,"shape":[144,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":22,"to_node":23,"shape":[4,36,16],"size_bytes":9216,"observed_device_transition":null},{"from_node":23,"to_node":24,"shape":[4,16,6,6],"size_bytes":9216,"observed_device_transition":null},{"from_node":24,"to_node":25,"shape":[4,576],"size_bytes":9216,"observed_device_transition":null},{"from_node":7,"to_node":25,"shape":[10,576],"size_bytes":23040,"observed_device_transition":null},{"from_node":8,"to_node":25,"shape":[10],"size_bytes":40,"observed_device_transition":null},{"from_node":25,"to_node":26,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":26,"to_node":27,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":27,"to_node":28,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":9,"to_node":28,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":28,"to_node":29,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":28,"to_node":29,"shape":[4,10],"size_bytes":160,"observed_device_transition":null},{"from_node":29,"to_node":30,"shape":[4,10],"size_bytes":160,"observed_device_transition":null}],"fusion_groups":[{"id":0,"kind":"MatMul","node_ids":[10]},{"id":1,"kind":"Elementwise","node_ids":[11]},{"id":2,"kind":"Opaque","node_ids":[12]},{"id":3,"kind":"Opaque","node_ids":[13]},{"id":4,"kind":"MatMul","node_ids":[14]},{"id":5,"kind":"MatMul","node_ids":[15]},{"id":6,"kind":"MatMul","node_ids":[16]},{"id":7,"kind":"Opaque","node_ids":[17]},{"id":8,"kind":"MatMul","node_ids":[18]},{"id":9,"kind":"Opaque","node_ids":[19]},{"id":10,"kind":"MatMul","node_ids":[20]},{"id":11,"kind":"MatMul","node_ids":[21]},{"id":12,"kind":"Opaque","node_ids":[22]},{"id":13,"kind":"Opaque","node_ids":[23]},{"id":14,"kind":"Opaque","node_ids":[24]},{"id":15,"kind":"Linear","node_ids":[25]},{"id":16,"kind":"Elementwise","node_ids":[26]},{"id":17,"kind":"Opaque","node_ids":[27]},{"id":18,"kind":"Elementwise","node_ids":[28,29]},{"id":19,"kind":"Reduction","node_ids":[30]}],"runtime":{"total_duration_us":2915,"op_events":[{"node_id":0,"op_label":"Input[0]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[144,27],"requires_grad":true},{"node_id":1,"op_label":"Input[1]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[27,16],"requires_grad":true},{"node_id":2,"op_label":"Input[2]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[16],"requires_grad":true},{"node_id":3,"op_label":"Input[3]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[16,16],"requires_grad":true},{"node_id":4,"op_label":"Input[4]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[16,16],"requires_grad":true},{"node_id":5,"op_label":"Input[5]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[16,16],"requires_grad":true},{"node_id":6,"op_label":"Input[6]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[16,16],"requires_grad":true},{"node_id":7,"op_label":"Input[7]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[10,576],"requires_grad":true},{"node_id":8,"op_label":"Input[8]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[10],"requires_grad":true},{"node_id":9,"op_label":"Input[9]","input_devices":[],"output_device":"Cpu","duration_us":0,"output_shape":[4,10],"requires_grad":true},{"node_id":10,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":22,"output_shape":[144,16],"requires_grad":true},{"node_id":11,"op_label":"Add","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":192,"output_shape":[144,16],"requires_grad":true},{"node_id":12,"op_label":"Reshape[4, 36, 16]","input_devices":["Cpu"],"output_device":"Cpu","duration_us":2,"output_shape":[4,36,16],"requires_grad":true},{"node_id":13,"op_label":"Reshape[144, 16]","input_devices":["Cpu"],"output_device":"Cpu","duration_us":1,"output_shape":[144,16],"requires_grad":true},{"node_id":14,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":7,"output_shape":[144,16],"requires_grad":true},{"node_id":15,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":11,"output_shape":[144,16],"requires_grad":true},{"node_id":16,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":5,"output_shape":[144,16],"requires_grad":true},{"node_id":17,"op_label":"Transpose","input_devices":["Cpu"],"output_device":"Cpu","duration_us":722,"output_shape":[16,144],"requires_grad":true},{"node_id":18,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":32,"output_shape":[144,144],"requires_grad":true},{"node_id":19,"op_label":"Softmax","input_devices":["Cpu"],"output_device":"Cpu","duration_us":1709,"output_shape":[144,144],"requires_grad":true},{"node_id":20,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":13,"output_shape":[144,16],"requires_grad":true},{"node_id":21,"op_label":"Mm","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":5,"output_shape":[144,16],"requires_grad":true},{"node_id":22,"op_label":"Reshape[4, 36, 16]","input_devices":["Cpu"],"output_device":"Cpu","duration_us":1,"output_shape":[4,36,16],"requires_grad":true},{"node_id":23,"op_label":"Reshape[4, 16, 6, 6]","input_devices":["Cpu"],"output_device":"Cpu","duration_us":1,"output_shape":[4,16,6,6],"requires_grad":true},{"node_id":24,"op_label":"Reshape[4, 576]","input_devices":["Cpu"],"output_device":"Cpu","duration_us":1,"output_shape":[4,576],"requires_grad":true},{"node_id":25,"op_label":"Linear","input_devices":["Cpu","Cpu","Cpu"],"output_device":"Cpu","duration_us":10,"output_shape":[4,10],"requires_grad":true},{"node_id":26,"op_label":"Gelu","input_devices":["Cpu"],"output_device":"Cpu","duration_us":7,"output_shape":[4,10],"requires_grad":true},{"node_id":27,"op_label":"Softmax","input_devices":["Cpu"],"output_device":"Cpu","duration_us":5,"output_shape":[4,10],"requires_grad":true},{"node_id":28,"op_label":"Sub","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":4,"output_shape":[4,10],"requires_grad":true},{"node_id":29,"op_label":"Mul","input_devices":["Cpu","Cpu"],"output_device":"Cpu","duration_us":6,"output_shape":[4,10],"requires_grad":true},{"node_id":30,"op_label":"Mean","input_devices":["Cpu"],"output_device":"Cpu","duration_us":2,"output_shape":[],"requires_grad":true}]}};
+</script>
+<script>
+// Ferroviz interactive graph viewer
+// Embedded in self-contained HTML output
+
+(function() {
+    "use strict";
+
+    const data = window.__FERROVIZ_DATA__;
+    if (!data) {
+        document.getElementById("graph-container").innerHTML = "<p>No graph data found.</p>";
+        return;
+    }
+
+    const container = document.getElementById("graph-container");
+    const detailPanel = document.getElementById("detail-panel");
+    const timelineContainer = document.getElementById("timeline-container");
+
+    // Color scheme
+    const COLORS = {
+        IO: "#9e9e9e",
+        Elementwise: "#42a5f5",
+        Reduction: "#ab47bc",
+        MatMul: "#26a69a",
+        Linear: "#66bb6a",
+        Activation: "#ffa726",
+        Shape: "#bdbdbd",
+        Control: "#ef5350",
+        Fused: "#7e57c2",
+        // Special states
+        cpuRoundTrip: "#e53935",
+        deviceTransition: "#ff9800",
+        fusedBorder: "#7e57c2",
+    };
+
+    // Build the graph using dagre-d3's bundled graphlib
+    const g = new dagreD3.graphlib.Graph({ compound: true });
+    g.setGraph({ rankdir: "TB", ranksep: 60, nodesep: 30, marginx: 20, marginy: 20 });
+    g.setDefaultEdgeLabel(function() { return {}; });
+
+    // Create cluster groups for fusion clusters
+    data.fusion_groups.forEach(function(cluster) {
+        g.setNode("cluster_" + cluster.id, {
+            label: cluster.kind,
+            clusterLabelPos: "top",
+            style: "fill: " + COLORS.fusedBorder + "22; stroke: " + COLORS.fusedBorder + ";",
+        });
+    });
+
+    // Add nodes
+    data.nodes.forEach(function(node) {
+        const hasCpuRoundTrip = node.cuda_memcpy && node.cuda_memcpy.length > 0 &&
+            node.cuda_kernels && node.cuda_kernels.length === 0;
+        const hasDeviceTransition = node.observed_input_devices && node.observed_output_device &&
+            node.observed_input_devices.some(function(d) {
+                return JSON.stringify(d) !== JSON.stringify(node.observed_output_device);
+            });
+
+        let color = COLORS[node.category] || COLORS.IO;
+        if (hasCpuRoundTrip) color = COLORS.cpuRoundTrip;
+        else if (hasDeviceTransition) color = COLORS.deviceTransition;
+
+        const shapeStr = node.output_shapes.map(function(s) { return "[" + s.join("×") + "]"; }).join(", ");
+        const timeStr = node.observed_duration_us != null ? " " + node.observed_duration_us + "µs" : "";
+        const label = node.op_label + (shapeStr ? "\n" + shapeStr : "") + timeStr;
+
+        g.setNode("n" + node.id, {
+            label: label,
+            style: "fill: " + color + "; stroke: #333; cursor: pointer;",
+            labelStyle: "fill: #fff; font-size: 12px;",
+            shape: "rect",
+            rx: 5,
+            ry: 5,
+            padding: 8,
+            id: "node-" + node.id,
+            _data: node,
+        });
+
+        if (node.cluster_id != null) {
+            g.setParent("n" + node.id, "cluster_" + node.cluster_id);
+        }
+    });
+
+    // Add edges
+    data.edges.forEach(function(edge, i) {
+        const shapeStr = edge.shape.length > 0 ? edge.shape.join("×") : "";
+        const sizeStr = edge.size_bytes > 0 ? formatBytes(edge.size_bytes) : "";
+        const label = [shapeStr, sizeStr].filter(Boolean).join(" ");
+        let style = "stroke: #666; stroke-width: 1.5px;";
+        if (edge.observed_device_transition === "CpuToGpu") {
+            style = "stroke: " + COLORS.deviceTransition + "; stroke-width: 2.5px;";
+        } else if (edge.observed_device_transition === "GpuToCpu") {
+            style = "stroke: " + COLORS.cpuRoundTrip + "; stroke-width: 2.5px;";
+        }
+
+        g.setEdge("n" + edge.from_node, "n" + edge.to_node, {
+            label: label,
+            labelStyle: "fill: #999; font-size: 10px;",
+            style: style,
+            arrowheadStyle: "fill: #666;",
+            curve: d3.curveBasis,
+        });
+    });
+
+    // Render with dagre-d3
+    const svg = d3.select("#graph-svg");
+    const inner = svg.append("g");
+    const render = new dagreD3.render();
+    render(inner, g);
+
+    // Fit to container
+    const graphWidth = g.graph().width || 800;
+    const graphHeight = g.graph().height || 600;
+    svg.attr("viewBox", "0 0 " + (graphWidth + 40) + " " + (graphHeight + 40));
+
+    // Zoom/pan (d3 v5 uses d3.event, not a callback parameter)
+    const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", function() {
+        inner.attr("transform", d3.event.transform);
+    });
+    svg.call(zoom);
+
+    // Initial fit
+    const containerRect = container.getBoundingClientRect();
+    const scale = Math.min(
+        containerRect.width / (graphWidth + 40),
+        containerRect.height / (graphHeight + 40),
+        1
+    );
+    const tx = (containerRect.width - graphWidth * scale) / 2;
+    const ty = 20;
+    svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+
+    // Node click handler
+    svg.selectAll("g.node").on("click", function(event) {
+        const nodeId = this.id.replace("node-", "");
+        const node = data.nodes.find(function(n) { return n.id === parseInt(nodeId); });
+        if (node) showDetail(node);
+    });
+
+    function showDetail(node) {
+        let html = "<h3>" + escapeHtml(node.op_label) + "</h3>";
+        html += "<table>";
+        html += row("Category", node.category);
+        html += row("Node ID", node.id);
+        if (node.output_shapes.length > 0) {
+            html += row("Output shapes", node.output_shapes.map(function(s) { return "[" + s.join(", ") + "]"; }).join("; "));
+        }
+        if (node.observed_output_device != null) {
+            html += row("Device", formatDevice(node.observed_output_device));
+        }
+        if (node.observed_duration_us != null) {
+            html += row("Duration", node.observed_duration_us + " µs");
+        }
+        if (node.requires_grad != null) {
+            html += row("Requires grad", node.requires_grad ? "yes" : "no");
+        }
+        if (node.cluster_id != null) {
+            const cluster = data.fusion_groups.find(function(c) { return c.id === node.cluster_id; });
+            html += row("Fusion group", cluster ? cluster.kind + " #" + cluster.id : "#" + node.cluster_id);
+        }
+        if (node.cuda_kernels && node.cuda_kernels.length > 0) {
+            html += "<tr><td colspan=\"2\"><strong>CUDA Kernels</strong></td></tr>";
+            node.cuda_kernels.forEach(function(k) {
+                html += row("  " + k.kernel_name, (k.duration_ns / 1000).toFixed(1) + " µs, grid=[" + k.grid.join(",") + "], block=[" + k.block.join(",") + "]");
+            });
+        }
+        if (node.cuda_memcpy && node.cuda_memcpy.length > 0) {
+            html += "<tr><td colspan=\"2\"><strong>CUDA Memcpy</strong></td></tr>";
+            node.cuda_memcpy.forEach(function(m) {
+                html += row("  " + m.direction, formatBytes(m.bytes) + " in " + (m.duration_ns / 1000).toFixed(1) + " µs");
+            });
+        }
+        html += "</table>";
+        detailPanel.innerHTML = html;
+        detailPanel.style.display = "block";
+    }
+
+    // Timeline view
+    if (data.runtime && data.runtime.op_events.length > 0) {
+        renderTimeline(data.runtime.op_events);
+    }
+
+    function renderTimeline(events) {
+        const maxDuration = Math.max.apply(null, events.map(function(e) { return e.duration_us; }));
+        if (maxDuration === 0) return;
+
+        let html = "<h3>Op Timeline (µs)</h3><div class=\"timeline\">";
+        events.forEach(function(e) {
+            if (e.duration_us === 0 && e.op_label.startsWith("Input")) return;
+            const width = Math.max(2, (e.duration_us / maxDuration) * 100);
+            const color = COLORS[data.nodes.find(function(n) { return n.id === e.node_id; })?.category] || "#666";
+            html += "<div class=\"timeline-bar\" style=\"width: " + width + "%; background: " + color + ";\" title=\"" +
+                escapeHtml(e.op_label) + ": " + e.duration_us + "µs\">" +
+                "<span class=\"timeline-label\">" + escapeHtml(e.op_label) + " " + e.duration_us + "µs</span></div>";
+        });
+        html += "</div>";
+        timelineContainer.innerHTML = html;
+    }
+
+    // Helpers
+    function row(key, value) {
+        return "<tr><td>" + escapeHtml(String(key)) + "</td><td>" + escapeHtml(String(value)) + "</td></tr>";
+    }
+
+    function formatDevice(d) {
+        if (typeof d === "string") return d;
+        if (d === "Cpu") return "CPU";
+        if (d && d.Cuda !== undefined) return "CUDA:" + d.Cuda;
+        return JSON.stringify(d);
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function escapeHtml(s) {
+        const div = document.createElement("div");
+        div.textContent = s;
+        return div.innerHTML;
+    }
+})();
+
+</script>
+</body>
+</html>

@@ -214,16 +214,19 @@ fn main() -> FerrotorchResult<()> {
         }
     }
 
-    // Write outputs
+    // Write outputs to examples/output/
+    let out_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("examples").join("output");
+    std::fs::create_dir_all(&out_dir).expect("failed to create output dir");
+
     let json = ferroviz::render_json(&vis);
-    std::fs::write("vision_attention_graph.json", &json)
-        .expect("failed to write JSON");
-    println!("\nWrote vision_attention_graph.json ({} bytes)", json.len());
+    let json_path = out_dir.join("vision_attention_graph.json");
+    std::fs::write(&json_path, &json).expect("failed to write JSON");
+    println!("\nWrote {} ({} bytes)", json_path.display(), json.len());
 
     let html = ferroviz::render_html(&vis);
-    std::fs::write("vision_attention_graph.html", &html)
-        .expect("failed to write HTML");
-    println!("Wrote vision_attention_graph.html ({} bytes)", html.len());
+    let html_path = out_dir.join("vision_attention_graph.html");
+    std::fs::write(&html_path, &html).expect("failed to write HTML");
+    println!("Wrote {} ({} bytes)", html_path.display(), html.len());
 
     println!("\nDone.");
     Ok(())
