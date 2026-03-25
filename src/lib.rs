@@ -48,7 +48,7 @@ pub mod cuda_trace;
 
 // Re-export the public API at crate root
 pub use capture::{capture, analyze, capture_training_step};
-pub use backward::capture_backward_graph;
+pub use backward::{capture_backward_graph, capture_backward_graph_timed};
 pub use json::{render_json, render_json_compact, parse_json};
 pub use html::{render_html, render_html_training_step};
 pub use model::{VisGraph, TrainingStepVis};
